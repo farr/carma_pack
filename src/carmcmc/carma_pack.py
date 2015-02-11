@@ -742,7 +742,7 @@ class CarmaSample(samplers.MCMCSample):
         # plot the autocorrelation function of the residuals and compare with the 95% confidence intervals for white
         # noise
         plt.subplot(223)
-        maxlag = 50
+        maxlag = min(50, self.time.size-1)
         wnoise_upper = 1.96 / np.sqrt(self.time.size)
         wnoise_lower = -1.96 / np.sqrt(self.time.size)
         plt.fill_between([0, maxlag], wnoise_upper, wnoise_lower, facecolor='grey')
