@@ -286,6 +286,8 @@ class CarmaSample(samplers.MCMCSample):
         logpost = np.array(sampler.GetLogLikes())
         trace = np.array(sampler.getSamples())
 
+        self._trace = trace
+
         super(CarmaSample, self).__init__(filename=filename, logpost=logpost, trace=trace)
 
         # now calculate the AR(p) characteristic polynomial roots, coefficients, MA coefficients, and amplitude of
@@ -322,6 +324,10 @@ class CarmaSample(samplers.MCMCSample):
         if MLE is not None:
             # add maximum a posteriori estimate
             self.add_mle(MLE)
+
+    @property
+    def trace(self):
+        return self._trace
 
     def add_mle(self, MLE):
         """
