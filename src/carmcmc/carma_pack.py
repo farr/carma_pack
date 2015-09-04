@@ -264,7 +264,7 @@ class CarmaSample(samplers.MCMCSample):
     """
     Class for storing and analyzing the MCMC samples of a CARMA(p,q) model.
     """
-    def __init__(self, time, y, ysig, sampler, q=0, filename=None, MLE=None):
+    def __init__(self, time, y, ysig, sampler, q=0, filename=None, MLE=None, trace=None, logpost=None, loglike=None):
         """
         Constructor for the CarmaSample class. In general a CarmaSample object should never be constructed directly,
         but should be constructed by calling CarmaModel.run_mcmc().
@@ -283,8 +283,10 @@ class CarmaSample(samplers.MCMCSample):
         self.ysig = ysig  # The standard deviation of the measurement errors of the time series
         self.q = q  # order of moving average polynomial
 
-        logpost = np.array(sampler.GetLogLikes())
-        trace = np.array(sampler.getSamples())
+        if logpost is None:
+            logpost = np.array(sampler.GetLogLikes())
+        if trace is None:
+            trace = np.array(sampler.getSamples())
 
         self._trace = trace
 
@@ -304,15 +306,18 @@ class CarmaSample(samplers.MCMCSample):
         print "Calculating sigma..."
         self._sigma_noise()
 
-        # add the log-likelihoods
-        print "Calculating log-likelihoods..."
-        loglik = np.empty(logpost.size)
-        sampler.SetMLE(True)
-        for i in xrange(logpost.size):
-            std_theta = carmcmcLib.vecD()
-            std_theta.extend(trace[i, :])
-            # loglik[i] = logpost[i] - sampler.getLogPrior(std_theta)
-            loglik[i] = sampler.getLogDensity(std_theta)
+        if loglike is None:
+            # add the log-likelihoods
+            print "Calculating log-likelihoods..."
+            loglik = np.empty(logpost.size)
+            sampler.SetMLE(True)
+            for i in xrange(logpost.size):
+                std_theta = carmcmcLib.vecD()
+                std_theta.extend(trace[i, :])
+                # loglik[i] = logpost[i] - sampler.getLogPrior(std_theta)
+                loglik[i] = sampler.getLogDensity(std_theta)
+        else:
+            loglik = loglike    
 
         self._samples['loglik'] = loglik
 
