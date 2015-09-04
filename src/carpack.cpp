@@ -357,7 +357,12 @@ bool CARp::CheckPriorBounds(arma::vec theta)
             if (lorentz_cent_difference > 1e-8) {
                 // Lorentzians are not in decreasing order, reject this proposal
                 prior_satisfied = false;
-            }
+            } else if (lorentz_cent_difference == 0.0) {
+	      double lorentz_width_difference = lorentz_width(i) - lorentz_width(i-1);
+	      if (lorentz_width_difference > 1e-8) {
+		prior_satisfied = false;
+	      }
+	    }
         }
     }
 
@@ -518,9 +523,7 @@ arma::vec CARMA::StartingMA() {
     return arma::abs(ma_quad);
 }
 
-// extract the moving-average coefficients from the CARMA parameter vector
-arma::vec CARMA::ExtractMA(arma::vec theta)
-{
+arma::cx_vec CARMA::ExtractMARoots(arma::vec theta) {
     arma::cx_vec ma_roots(q_);
     
     // Construct the complex vector of roots of the characteristic polynomial:
@@ -553,6 +556,14 @@ arma::vec CARMA::ExtractMA(arma::vec theta)
         ma_roots(q_-1) = std::complex<double> (real_root, 0.0);
     }
 
+    return ma_roots;
+}
+
+// extract the moving-average coefficients from the CARMA parameter vector
+arma::vec CARMA::ExtractMA(arma::vec theta)
+{
+  arma::cx_vec ma_roots = CARMA::ExtractMARoots(theta);
+    
     // calculate the coefficients of the polynomial
     //
     //    p(x) = x^q + c_1 * x^{q-1} + ... + c_{q-1} * x + c_q
@@ -577,6 +588,35 @@ arma::vec CARMA::ExtractMA(arma::vec theta)
     }
 
     return ma_coefs;
+}
+
+bool CARMA::CheckPriorBounds(arma::vec theta) {
+  bool superStatus = CARp::CheckPriorBounds(theta);
+
+  if (superStatus) {
+    arma::cx_vec ma_roots = CARMA::ExtractMARoots(theta);
+
+    for (int i = 0; i < q_; i++) {
+      double cent_freq = fabs(imag(ma_roots(i))) / (2.0*arma::datum::pi);
+      double width = -real(ma_roots(i)) / (2.0*arma::datum::pi);
+
+      if (cent_freq > max_freq_) return false;
+      if (width > max_freq_) return false;
+      if (width < min_freq_) return false;
+    }
+
+    if (order_lorentzians_) {
+      for (int i = 1; i < q_; i++) {
+	if (fabs(imag(ma_roots(i))) > fabs(imag(ma_roots(i-1)))) return false;
+	if ((fabs(imag(ma_roots(i))) == fabs(imag(ma_roots(i-1)))) &&
+	    (real(ma_roots(i)) > real(ma_roots(i-1)))) return false;
+      }
+    }
+
+    return true;
+  } else {
+    return superStatus;
+  }
 }
 
 /*******************************************************************

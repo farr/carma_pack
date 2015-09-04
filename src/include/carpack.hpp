@@ -385,6 +385,9 @@ public:
     // return the starting value for the MA coefficients
     arma::vec StartingMA();
     
+  // extract the MA roots
+  arma::cx_vec ExtractMARoots(arma::vec theta);
+
     // extract the moving-average parameters from the CARMA parameter vector
     arma::vec ExtractMA(arma::vec theta);
     
@@ -394,6 +397,9 @@ public:
         return theta(0) * theta(0) / Variance(ar_roots, ma_coefs, 1.0);
     }
     
+    // Set the bounds on the uniform prior.
+    bool CheckPriorBounds(arma::vec theta);
+
 private:
     int q_; // order of moving average polynomial
 };
