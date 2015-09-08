@@ -712,7 +712,7 @@ class CarmaSample(samplers.MCMCSample):
 
         fig = plt.figure()
         # compute the marginal mean and variance of the predicted values
-        time_predict = np.linspace(1.001 * self.time.min(), self.time.max(), nplot)
+        time_predict = np.linspace(self.time.min(), self.time.max(), nplot)
         predicted_mean, predicted_var = self.predict(time_predict, bestfit=bestfit)
         predicted_low = predicted_mean - np.sqrt(predicted_var)
         predicted_high = predicted_mean + np.sqrt(predicted_var)
