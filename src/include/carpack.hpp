@@ -167,8 +167,9 @@ public:
         double logpost = 0.0;
         for (int i=0; i<time_.n_elem; i++) {
             double ycent = y_(i) - pKFilter_->mean(i) - mu;
-            logpost += -0.5 * log(pKFilter_->var(i)) - 0.5 * ycent * ycent / pKFilter_->var(i);
+            logpost += - 0.5 * log(pKFilter_->var(i)) - 0.5 * ycent * ycent / pKFilter_->var(i);
         }
+	logpost -= 0.5*time_.n_elem*log(2.0*arma::datum::pi);
 
         logpost += LogPrior(theta);
         
