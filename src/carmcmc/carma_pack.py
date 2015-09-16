@@ -50,7 +50,7 @@ class CarmaModel(object):
         self.q = q
         self.mcmc_sample = None
 
-    def run_mcmc(self, nsamples, nburnin=None, ntemperatures=None, nthin=1, init=None):
+    def run_mcmc(self, nsamples, nburnin=None, ntemperatures=None, nthin=1, init=None, tmax=None):
         """
         Run the MCMC sampler. This is actually a wrapper that calls the C++ code that runs the MCMC sampler.
 
@@ -73,6 +73,9 @@ class CarmaModel(object):
         if init is None:
             init = carmcmcLib.vecD()
             
+        if tmax is None:
+            tmax = max(100, self.t.shape[0])
+
         if self.p == 1:
             # Treat the CAR(1) case separately
             cppSample = carmcmcLib.run_mcmc_car1(nsamples, nburnin, self._time, self._y, self._ysig,
@@ -81,7 +84,7 @@ class CarmaModel(object):
             sample = Car1Sample(self.time, self.y, self.ysig, cppSample)
         else:
             cppSample = carmcmcLib.run_mcmc_carma(nsamples, nburnin, self._time, self._y, self._ysig,
-                                                  self.p, self.q, ntemperatures, False, nthin, init)
+                                                  self.p, self.q, ntemperatures, False, nthin, init, tmax)
             # run_mcmc_car returns a wrapper around the C++ CARMA class, convert to a python object
             sample = CarmaSample(self.time, self.y, self.ysig, cppSample, q=self.q)
 

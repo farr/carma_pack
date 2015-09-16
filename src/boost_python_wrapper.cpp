@@ -23,7 +23,7 @@
 using namespace boost::python;
 
 BOOST_PYTHON_FUNCTION_OVERLOADS(car1Overloads, RunCar1Sampler, 5, 7);
-BOOST_PYTHON_FUNCTION_OVERLOADS(carmaOverloads, RunCarmaSampler, 8, 11);
+BOOST_PYTHON_FUNCTION_OVERLOADS(carmaOverloads, RunCarmaSampler, 8, 12);
 
 BOOST_PYTHON_MODULE(_carmcmc){
     import_array();

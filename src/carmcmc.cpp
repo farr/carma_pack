@@ -79,7 +79,7 @@ RunCar1Sampler(int sample_size, int burnin, std::vector<double> time, std::vecto
 std::shared_ptr<CARp>
 RunCarmaSampler(int sample_size, int burnin, std::vector<double> time, std::vector<double> y,
                 std::vector<double> yerr, int p, int q, int nwalkers, bool do_zcarma,
-                int thin, const std::vector<double>& init)
+                int thin, const std::vector<double>& init, double max_temperature)
 {
     assert(p > 1);
     double sum = std::accumulate(y.begin(), y.end(), 0.0);
@@ -87,9 +87,6 @@ RunCarmaSampler(int sample_size, int burnin, std::vector<double> time, std::vect
     double sq_sum = std::inner_product(y.begin(), y.end(), y.begin(), 0.0);
     double var = (sq_sum / y.size() - mean * mean);
     double max_stdev = 10.0 * sqrt(var);
-    
-    // Set the temperature ladder. The logarithms of the temperatures are on a linear grid
-    double max_temperature = 100.0;
     
     arma::vec temp_ladder = arma::linspace<arma::vec>(0.0, log(max_temperature), nwalkers);
     temp_ladder = arma::exp(temp_ladder);
